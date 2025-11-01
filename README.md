@@ -1,128 +1,85 @@
-McDonald’s — SQL Case Study (EU Division)
+# McDonald’s — SQL Case Study (EU Division)
 
-Objective: Clean messy transactional data and answer key questions from Finance, Compliance, and Marketing so the business can make faster, better decisions.
+**Objective:** Clean messy transactional data and answer key questions from **Finance**, **Compliance**, and **Marketing** so the business can make faster, better decisions.
 
-Data
+---
 
-data/Sales.csv – line-item sales (date, product, price, quantity, payment method, store_id)
+## Data
 
-data/Store.csv – store attributes (city, country/region, manager, etc.)
+- `data/Sales.csv` – line-item sales (date, product, price, quantity, payment method, store_id)  
+- `data/Store.csv` – store attributes (city, country/region, manager, etc.)  
+- `data/Theft.csv` – theft reports (amount, date, store_id/manager)
 
-data/Theft.csv – theft reports (amount, date, store_id/manager)
+> Data is synthetic for demonstration. No real McDonald’s data is used.
 
-Business Questions
-Finance
+---
 
-Min and max prices
+## Business Questions
 
-Average price per product
+### Finance
+1. Min and max prices  
+2. Average price per product  
+3. Total revenue  
+4. Total quantity sold  
+5. Total profit
 
-Total revenue
+### Compliance
+1. Theft amount by manager  
+2. Managers with theft > 10, plus age/sex/tenure/city (export as CSV)
 
-Total quantity sold
+### Marketing
+1. Country with most units sold  
+2. Quantity mix by payment method  
+3. Quantity mix by purchase type  
+4. Products ranked by quantity sold (high → low)
 
-Total profit
+---
 
-Compliance
+## Results (highlights)
 
-Theft amount by manager
+- **Total revenue:** **$8,031,166**  
+- **Total cost:** **$1,382,379**  
+- **Total profit:** **$5,707,702**  
+- **Total units sold:** **1,382,379**  
+- **Price range:** **$2.95 – $12.99**  
+- **Top country by units:** **Spain** — **154,922** units (**11.21%** of total)  
+- **Top product by units:** **Fries** — **561,951** units  
 
-Managers with theft > 10, plus age/sex/tenure/city (export as CSV)
+**Payment mix**
+- Credit Card: **80.0%**  
+- Cash: **17.3%**  
+- Gift card: **2.7%**
 
-Marketing
+**Purchase type mix**
+- In-store: **48.6%**  
+- Drive-thru: **46.3%**  
+- Online: **5.1%**
 
-Country with most units sold
+> Detailed outputs are in `/results/` (CSV), e.g. `Total Revenue.csv`, `Total Profit.csv`, `Country Quantity Sold.csv`, `Products Desc.csv`, etc.
 
-Quantity mix by payment method
+---
 
-Quantity mix by purchase type
+## Repository Structure
 
-Products ranked by quantity sold (high → low)
 
-Results (highlights)
+---
 
-Total revenue: $8,031,166
+## How to Reproduce
 
-Total cost: $1,382,379
+### Option A — MySQL (what I used)
 
-Total profit: $5,707,702
+1. Create a schema (e.g., `mcdonalds`) and import the three CSVs as tables:
+   - `sales`, `store`, `theft`
+2. Run `queries/01_staging_cleaning.sql` to standardize types/names and create helper views.  
+3. Execute the remaining query files in order (`02_...` → `12_...`).  
+4. Export result grids as CSV into `results/`.
 
-Total units sold: 1,382,379
+*Tip:* If your SQL client opens another default schema, run `USE mcdonalds;` first or fully-qualify tables (e.g., `mcdonalds.sales`).
 
-Price range: $2.95 – $12.99
+### Option B — SQLite (one-cell quick run)
 
-Top country by units: Spain — 154,922 units (11.21% of total)
-
-Top product by units: Fries — 561,951 units
-
-Payment mix
-
-Credit Card: 80.0%
-
-Cash: 17.3%
-
-Gift card: 2.7%
-
-Purchase type mix
-
-In-store: 48.6%
-
-Drive-thru: 46.3%
-
-Online: 5.1%
-
-Detailed outputs are in /results/ (CSV), e.g. Total Revenue.csv, Total Profit.csv, Country Quantity Sold.csv, Products Desc.csv, etc.
-
-Repository Structure
-.
-├─ README.md
-├─ data/
-│  ├─ Sales.csv
-│  ├─ Store.csv
-│  └─ Theft.csv
-├─ queries/
-│  ├─ 01_staging_cleaning.sql
-│  ├─ 02_min_max_prices.sql
-│  ├─ 03_avg_price_by_product.sql
-│  ├─ 04_total_revenue.sql
-│  ├─ 05_total_quantity.sql
-│  ├─ 06_total_profit.sql
-│  ├─ 07_theft_by_manager.sql
-│  ├─ 08_theft_over_10_manager_details.sql
-│  ├─ 09_country_with_most_units.sql
-│  ├─ 10_qty_share_by_payment_method.sql
-│  ├─ 11_qty_share_by_purchase_type.sql
-│  └─ 12_products_ranked_by_units.sql
-└─ results/
-   ├─ Total Revenue.csv
-   ├─ Total Costs.csv
-   ├─ Total Profit.csv
-   ├─ Country Quantity Sold.csv
-   ├─ Payment by Ratio.csv
-   ├─ Purchase by Ratio.csv
-   ├─ Products Desc.csv
-   └─ (others)
-
-How to Reproduce
-Option A — MySQL (what I used)
-
-Create a schema (e.g., mcdonalds) and import the three CSVs as tables:
-
-sales, store, theft
-
-Run queries/01_staging_cleaning.sql to standardize types/names and create helper views.
-
-Execute the remaining query files in order (02_... → 12_...).
-
-Export result grids as CSV into results/.
-
-Tip: If your SQL client opens another default schema, run USE mcdonalds; first or fully-qualify tables (e.g., mcdonalds.sales).
-
-Option B — SQLite (one-cell quick run)
-
-Prefer local? Use this Python snippet from repo root to load CSVs → run queries → write CSVs:
-
-# pip install pandas
+```python
+# run from repo root; requires: pandas
 import os, glob, sqlite3, pandas as pd
 os.makedirs("db", exist_ok=True); os.makedirs("results", exist_ok=True)
 conn = sqlite3.connect("db/sample.db")
@@ -139,6 +96,7 @@ for q in sorted(glob.glob("queries/*.sql")):
     except Exception:
         conn.executescript(sql); conn.commit()
 conn.close()
+
 
 SQL Approach & Notes
 
