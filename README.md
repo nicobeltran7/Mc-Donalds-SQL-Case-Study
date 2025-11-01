@@ -62,56 +62,55 @@
 ## Repository Structure
 
 
+## SQL Approach & Notes
+
+- **Staging / Cleaning**
+  - Standardize column names and types (trim strings, cast dates/numerics).
+  - Create helper views for **Revenue**, **Cost**, **Profit** (e.g., `price * quantity`).
+  - Enforce consistent IDs and join keys across `sales`, `store`, and `theft`.
+
+- **Metric Definitions**
+  - **Total Revenue** = `SUM(price * quantity)`
+  - **Total Cost**    = `SUM(cost_per_unit * quantity)` (or provided cost column)
+  - **Total Profit**  = `Revenue - Cost`
+  - Document KPI assumptions at the top of each query.
+
+- **Queries by Theme**
+  - **Finance:** min/max price, avg price by product, totals (revenue/quantity/profit).
+  - **Marketing:** country leaderboards, product ranking, payment & purchase-type mix.
+  - **Compliance:** theft amount by manager; detail view for managers over threshold.
+
+- **Techniques**
+  - Aggregations (`SUM`, `AVG`, `MIN`, `MAX`).
+  - Window functions for rankings where supported (or `ORDER BY ... LIMIT` as fallback).
+  - Proportion calculations via `SUM(...) / SUM(...)` for clean mix shares.
+  - Reusable CTEs/views to avoid repeating business logic.
+
+- **Reproducibility**
+  - One `.sql` file **per question**, numbered in execution order.
+  - Each query returns a **final result set** suitable for CSV export.
+  - Keep staging logic in a dedicated `01_staging_cleaning.sql`.
+
 ---
 
-## How to Reproduce
+## Next Steps
 
-### Option A — MySQL (what I used)
+- **Decision Dashboard**
+  - Build a one-page Power BI/Tableau view: KPI cards (Revenue, Profit, Units), trend, and breakdowns by Product/Store/Country.
+  - Add slicers for date range, region, and payment type.
 
-1. Create a schema (e.g., `mcdonalds`) and import the three CSVs as tables:
-   - `sales`, `store`, `theft`
-2. Run `queries/01_staging_cleaning.sql` to standardize types/names and create helper views.  
-3. Execute the remaining query files in order (`02_...` → `12_...`).  
-4. Export result grids as CSV into `results/`.
+- **Data Quality & Anomalies**
+  - Implement simple outlier rules (z-score/IQR) for weekly store revenue and theft amounts.
+  - Create “DQ checks” queries (nulls, duplicates, impossible values like negative qty).
 
-*Tip:* If your SQL client opens another default schema, run `USE mcdonalds;` first or fully-qualify tables (e.g., `mcdonalds.sales`).
+- **Performance & Scale**
+  - If migrating to Postgres: add indexes on join keys (`store_id`, `sale_date`) and common filter columns.
+  - Parameterize date ranges with variables or views for month-end refresh.
 
-### Option B — SQLite (one-cell quick run)
+- **Documentation**
+  - Add a short **Data Dictionary** and **KPI Definitions** section to the README.
+  - Include 1–2 screenshots of top results and (optionally) the dashboard.
 
-```python
-# run from repo root; requires: pandas
-import os, glob, sqlite3, pandas as pd
-os.makedirs("db", exist_ok=True); os.makedirs("results", exist_ok=True)
-conn = sqlite3.connect("db/sample.db")
-
-for p in ["data/Sales.csv","data/Store.csv","data/Theft.csv"]:
-    tbl = os.path.splitext(os.path.basename(p))[0].lower()
-    pd.read_csv(p).to_sql(tbl, conn, if_exists="replace", index=False)
-
-for q in sorted(glob.glob("queries/*.sql")):
-    name = os.path.splitext(os.path.basename(q))[0]
-    sql = open(q, "r", encoding="utf-8").read()
-    try:
-        pd.read_sql_query(sql, conn).to_csv(f"results/{name}.csv", index=False)
-    except Exception:
-        conn.executescript(sql); conn.commit()
-conn.close()
-
-
-SQL Approach & Notes
-
-Staging/Cleaning: trim/case normalize strings, cast numeric/date fields, consistent IDs; helper views for revenue/cost/profit.
-
-Aggregations & window functions: product rankings, country leaderboards, mix shares.
-
-Compliance slice: threshold filter (>10) joined to manager demographics for targeted action.
-
-Reproducibility: one query per business question; each returns a ready-to-export result.
-
-Next Steps
-
-Build a one-page Power BI/Tableau dashboard (KPI cards, trend, product & store breakdown).
-
-Add anomaly checks (z-scores) to flag outlier stores or theft spikes.
-
-Parameterize date ranges for month-end refresh.
+- **Packaging**
+  - Add `requirements.txt` (for the SQLite/Python option) and a `.gitignore`.
+  - (Optional) Add a small `scripts/run_all.py` that rebuilds results with one command.
