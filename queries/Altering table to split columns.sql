@@ -1,0 +1,3 @@
+ALTER TABLE store
+ADD COLUMN country VARCHAR(50) AFTER storeid,
+ADD COLUMN city VARCHAR(50) AFTER country
