@@ -1,0 +1,14 @@
+country,SUM(sl.quantity_sold)
+Switzerland,77114
+Italy,81371
+Croatia,85361
+"Czech Republic",87768
+"United Kingdom",93668
+Germany,97909
+Hungary,102509
+Poland,114238
+Austria,116178
+Slovakia,119435
+France,125383
+Portugal,126523
+Spain,154922

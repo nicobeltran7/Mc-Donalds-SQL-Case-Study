@@ -1,0 +1,6 @@
+general_manager,age,sex,tenure,City,amounts
+"Tom Jackson",25,Male,1,London,221
+"Pablo Perez",42,Male,8,Madrid,27
+"Joao Silva",41,Male,8,Lisbon,12
+"Walter Muller",NULL,Male,5,Berlin,12
+"Mia Russo",28,Female,5,Rome,19

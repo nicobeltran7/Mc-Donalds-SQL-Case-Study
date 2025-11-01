@@ -1,0 +1,6 @@
+product_Name,ROUND(AVG(Price))
+Burgers,13
+"Chicken Sandwiches",10
+Fries,3
+Beverages,3
+"Sides & Other",5
