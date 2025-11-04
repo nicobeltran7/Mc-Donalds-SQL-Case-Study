@@ -1,116 +1,233 @@
-# McDonald’s — SQL Case Study (EU Division)
+# McDonald's EU Division — SQL Case Study 🍔
 
-**Objective:** Clean messy transactional data and answer key questions from **Finance**, **Compliance**, and **Marketing** so the business can make faster, better decisions.
+## The Challenge
 
----
+Imagine you're the newly hired Data Analyst for McDonald's European Division. On your first day, you receive three messy CSV files containing months of transactional data—sales records, store information, and theft reports scattered across dozens of EU locations. 
 
-## Data
+Finance needs revenue insights. Compliance is concerned about theft patterns. Marketing wants to understand customer behavior. And everyone needs answers *yesterday*.
 
-- `data/Sales.csv` – line-item sales (date, product, price, quantity, payment method, store_id)  
-- `data/Store.csv` – store attributes (city, country/region, manager, etc.)  
-- `data/Theft.csv` – theft reports (amount, date, store_id/manager)
-
-> Data is synthetic for demonstration. No real McDonald’s data is used.
+Your mission? Clean the chaos, extract actionable insights, and deliver results that drive real business decisions.
 
 ---
 
-## Business Questions
+## 📊 The Data
 
-### Finance
-1. Min and max prices  
-2. Average price per product  
-3. Total revenue  
-4. Total quantity sold  
-5. Total profit
+This case study works with three interconnected datasets:
 
-### Compliance
-1. Theft amount by manager  
-2. Managers with theft > 10, plus age/sex/tenure/city (export as CSV)
+- **`Sales.csv`** — Line-item transactions: dates, products, prices, quantities, payment methods, store IDs
+- **`Store.csv`** — Store master data: city, country/region, manager details, operational info  
+- **`Theft.csv`** — Incident reports: theft amounts, dates, affected stores and managers
 
-### Marketing
-1. Country with most units sold  
-2. Quantity mix by payment method  
-3. Quantity mix by purchase type  
-4. Products ranked by quantity sold (high → low)
+> **Note:** All data is synthetically generated for educational purposes. No actual McDonald's data was used.
 
 ---
 
-## Results (highlights)
+## 🎯 Business Questions Answered
 
-- **Total revenue:** **$8,031,166**  
-- **Total cost:** **$1,382,379**  
-- **Total profit:** **$5,707,702**  
-- **Total units sold:** **1,382,379**  
-- **Price range:** **$2.95 – $12.99**  
-- **Top country by units:** **Spain** — **154,922** units (**11.21%** of total)  
-- **Top product by units:** **Fries** — **561,951** units  
+### 💰 Finance Team
+*"Show me the money—and where it's going."*
 
-**Payment mix**
-- Credit Card: **80.0%**  
-- Cash: **17.3%**  
-- Gift card: **2.7%**
+1. What are our minimum and maximum product prices?
+2. What's the average price point for each product?
+3. What's our total revenue across all stores?
+4. How many units have we sold?
+5. What's our bottom-line profit after costs?
 
-**Purchase type mix**
-- In-store: **48.6%**  
-- Drive-thru: **46.3%**  
-- Online: **5.1%**
+### 🔒 Compliance Team
+*"We need to identify and address theft patterns immediately."*
 
-> Detailed outputs are in `/results/` (CSV), e.g. `Total Revenue.csv`, `Total Profit.csv`, `Country Quantity Sold.csv`, `Products Desc.csv`, etc.
+1. How much theft has occurred under each manager's watch?
+2. Which managers have experienced more than 10 theft incidents? (Include their demographics, tenure, and location for pattern analysis)
 
----
+### 📈 Marketing Team
+*"Help us understand our customers and optimize our strategy."*
 
-## Repository Structure
-
-
-## SQL Approach & Notes
-
-- **Staging / Cleaning**
-  - Standardize column names and types (trim strings, cast dates/numerics).
-  - Create helper views for **Revenue**, **Cost**, **Profit** (e.g., `price * quantity`).
-  - Enforce consistent IDs and join keys across `sales`, `store`, and `theft`.
-
-- **Metric Definitions**
-  - **Total Revenue** = `SUM(price * quantity)`
-  - **Total Cost**    = `SUM(cost_per_unit * quantity)` (or provided cost column)
-  - **Total Profit**  = `Revenue - Cost`
-  - Document KPI assumptions at the top of each query.
-
-- **Queries by Theme**
-  - **Finance:** min/max price, avg price by product, totals (revenue/quantity/profit).
-  - **Marketing:** country leaderboards, product ranking, payment & purchase-type mix.
-  - **Compliance:** theft amount by manager; detail view for managers over threshold.
-
-- **Techniques**
-  - Aggregations (`SUM`, `AVG`, `MIN`, `MAX`).
-  - Window functions for rankings where supported (or `ORDER BY ... LIMIT` as fallback).
-  - Proportion calculations via `SUM(...) / SUM(...)` for clean mix shares.
-  - Reusable CTEs/views to avoid repeating business logic.
-
-- **Reproducibility**
-  - One `.sql` file **per question**, numbered in execution order.
-  - Each query returns a **final result set** suitable for CSV export.
-  - Keep staging logic in a dedicated `01_staging_cleaning.sql`.
+1. Which country is driving the most unit sales?
+2. How are customers paying? (Payment method breakdown)
+3. Where are they ordering from? (In-store vs. Drive-thru vs. Online)
+4. Which products are our star performers? (Ranked by volume)
 
 ---
 
-## Next Steps
+## 🔍 Key Insights
 
-- **Decision Dashboard**
-  - Build a one-page Power BI/Tableau view: KPI cards (Revenue, Profit, Units), trend, and breakdowns by Product/Store/Country.
-  - Add slicers for date range, region, and payment type.
+### Financial Performance
+- **Total Revenue:** **$8,031,166**  
+- **Total Cost:** **$1,382,379**  
+- **Total Profit:** **$5,707,702** (71% profit margin 🎉)
+- **Units Sold:** **1,382,379** items
+- **Price Range:** **$2.95 – $12.99**
 
-- **Data Quality & Anomalies**
-  - Implement simple outlier rules (z-score/IQR) for weekly store revenue and theft amounts.
-  - Create “DQ checks” queries (nulls, duplicates, impossible values like negative qty).
+### Market Intelligence
+- **Top Market:** Spain leads with **154,922 units** (**11.21%** of total volume)
+- **Best-Seller:** Fries dominate with **561,951 units sold** (the people have spoken!)
 
-- **Performance & Scale**
-  - If migrating to Postgres: add indexes on join keys (`store_id`, `sale_date`) and common filter columns.
-  - Parameterize date ranges with variables or views for month-end refresh.
+### Customer Behavior
+**Payment Preferences:**
+- Credit Card: **80.0%** (digital-first customers)
+- Cash: **17.3%** (still relevant)
+- Gift Card: **2.7%** (growth opportunity?)
 
-- **Documentation**
-  - Add a short **Data Dictionary** and **KPI Definitions** section to the README.
-  - Include 1–2 screenshots of top results and (optionally) the dashboard.
+**Purchase Channels:**
+- In-Store: **48.6%** (traditional dining experience)
+- Drive-Thru: **46.3%** (convenience is king)
+- Online: **5.1%** (emerging channel to watch)
 
-- **Packaging**
-  - Add `requirements.txt` (for the SQLite/Python option) and a `.gitignore`.
-  - (Optional) Add a small `scripts/run_all.py` that rebuilds results with one command.
+> 💡 **Insight:** Nearly half of all transactions happen through drive-thru, suggesting customers value speed and convenience. Online ordering, while small, represents a significant growth opportunity.
+
+---
+
+## 📁 Repository Structure
+
+```
+Mc-Donalds-SQL-Case-Study/
+│
+├── data/                                    # Raw data files
+│   ├── Sales.csv
+│   ├── Store.csv
+│   └── Theft.csv
+│
+├── queries/                                 # SQL scripts (numbered execution order)
+│   ├── .gitkeep
+│   ├── AVG.sql                             # Average price calculations
+│   ├── Altering table to split columns.sql # Data cleaning operations
+│   ├── Check duplicate values.sql          # Data quality checks
+│   ├── Compliance analysis.sql             # Theft and manager analysis
+│   ├── Delete duplicates.sql               # Duplicate removal
+│   ├── Exercises.sql                       # Practice queries
+│   ├── Fix typos.sql                       # Data standardization
+│   ├── Fixing column Header typo.sql       # Column name corrections
+│   ├── MAX MIN.sql                         # Price range analysis
+│   ├── Payment by ratio.sql                # Payment method distribution
+│   ├── Products DESC.sql                   # Product ranking
+│   ├── Purchase by ratio.sql               # Purchase channel analysis
+│   ├── Splitting columns.sql               # Column parsing
+│   ├── TotalCost.sql                       # Cost calculations
+│   ├── TotalProfit.sql                     # Profit calculations
+│   ├── TotalRevenue.sql                    # Revenue calculations
+│   ├── deleting columns.sql                # Schema cleanup
+│   └── populating splitted columns.sql     # Derived column population
+│
+├── results/                                 # Query outputs (CSV exports)
+│   ├── .gitkeep
+│   ├── AVG.csv
+│   ├── Compliance Analysis.csv             # Managers with theft > 10 incidents
+│   ├── Country Quantity Sold.csv
+│   ├── Max & Min Price.csv
+│   ├── Payment by Ratio.csv
+│   ├── Products Desc.csv
+│   ├── Purchase by Ratio.csv
+│   ├── Total Costs.csv
+│   ├── Total Profit.csv
+│   └── Total Revenue.csv
+│
+└── README.md                                # You are here!
+```
+
+---
+
+## 🛠️ SQL Techniques Demonstrated
+
+### Data Cleaning & Preparation
+- **Column standardization:** Trimming whitespace, fixing typos, renaming headers
+- **Type casting:** Converting string dates to proper DATE types, ensuring numeric fields
+- **Duplicate detection & removal:** Using window functions and CTEs to identify and eliminate duplicates
+- **Schema restructuring:** Splitting combined columns, dropping unnecessary fields
+
+### Analysis & Aggregation
+- **Core aggregations:** `SUM`, `AVG`, `MIN`, `MAX` for KPI calculations
+- **Window functions:** Rankings and running totals where supported
+- **Ratio calculations:** Using `SUM(CASE WHEN ...) / SUM(...)` for clean percentage breakdowns
+- **Multi-table joins:** Connecting sales, store, and theft data for comprehensive analysis
+
+### Business Logic Implementation
+- **Revenue:** `SUM(price × quantity)`
+- **Cost:** `SUM(cost_per_unit × quantity)`  
+- **Profit:** `Revenue - Cost`
+- **Mix analysis:** Category proportions with two decimal precision
+
+### Best Practices
+- **One query = one business question** (easy to understand and maintain)
+- **Reusable CTEs/views** to avoid repeating logic
+- **Clear naming conventions** for queries and outputs
+- **CSV-ready result sets** for immediate stakeholder consumption
+
+---
+
+## 🚀 How to Use This Project
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/nicobeltran7/Mc-Donalds-SQL-Case-Study.git
+   cd Mc-Donalds-SQL-Case-Study
+   ```
+
+2. **Load the data**
+   - Import the three CSV files from `/data/` into your SQL database
+   - Recommended: SQLite for quick local setup, or PostgreSQL/MySQL for production-like environment
+
+3. **Run the queries**
+   - Execute scripts in `/queries/` in order (start with cleaning scripts)
+   - Each query is self-contained and documented
+   - Results will match those in `/results/` folder
+
+4. **Explore and extend**
+   - Modify queries to answer your own business questions
+   - Add new analyses based on different dimensions
+   - Practice different SQL techniques and optimizations
+
+---
+
+## 💡 Next Steps & Extensions
+
+### 📊 Build a Dashboard
+Transform these insights into an executive dashboard:
+- **Tool:** Power BI, Tableau, or Looker
+- **Key visuals:** 
+  - KPI cards for Revenue, Profit, and Units Sold
+  - Time-series trend for daily/weekly performance
+  - Geographic heat map of sales by country
+  - Product mix treemap
+- **Interactivity:** Date range selector, country filter, payment type slicer
+
+### 🔍 Advanced Analytics
+Take the analysis deeper:
+- **Anomaly detection:** Implement z-score or IQR methods to flag unusual revenue or theft patterns
+- **Cohort analysis:** Track customer behavior over time
+- **Basket analysis:** Which products are frequently purchased together?
+- **Forecasting:** Predict next quarter's sales using historical trends
+
+### ⚡ Performance Optimization
+Scale for production workloads:
+- **Indexing strategy:** Add indexes on `store_id`, `sale_date`, and other frequently filtered columns
+- **Partitioning:** Split large tables by date range for faster queries
+- **Materialized views:** Pre-compute expensive aggregations
+- **Query optimization:** Analyze execution plans and eliminate bottlenecks
+
+### 🧪 Data Quality Framework
+Ensure data reliability:
+- **Automated checks:** Null counts, duplicate detection, value range validation
+- **Scheduled monitoring:** Daily data quality reports
+- **Alert system:** Notify stakeholders when anomalies are detected
+- **Documentation:** Maintain a data dictionary with business definitions
+
+### 📚 Documentation Enhancement
+Make this project portfolio-ready:
+- **Data Dictionary:** Document every field, its meaning, and data type
+- **KPI Glossary:** Define exactly how each metric is calculated
+- **Process Flow Diagram:** Visualize the ETL and analysis pipeline
+- **Screenshots:** Include sample outputs and (if built) dashboard previews
+
+---
+
+## 🎓 Skills Demonstrated
+
+This project showcases:
+- ✅ **Data Cleaning:** Handling messy real-world data with SQL
+- ✅ **SQL Proficiency:** Complex queries, joins, aggregations, window functions
+- ✅ **Business Acumen:** Translating stakeholder questions into actionable analysis
+- ✅ **Problem-Solving:** Working through data quality issues systematically
+- ✅ **Documentation:** Clear, professional README and query organization
+- ✅ **Attention to Detail:** Accurate calculations with proper business context
+
+---
